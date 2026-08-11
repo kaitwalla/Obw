@@ -13,18 +13,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN fc-cache -fv
 
-# Pull a known-good Functious revision, then apply OBW as a source overlay.
 RUN git clone "$FUNCTIOUS_REPO" /app \
     && cd /app \
     && git checkout "$FUNCTIOUS_REF"
 
 COPY . /obw
 
-RUN mkdir -p /app/commands /app/functions /app/reactionHandlers \
+RUN mkdir -p /app/commands /app/functions /app/reactionHandlers /app/blueprints \
     && cp /obw/commands/community.js /app/commands/community.js \
+    && cp /obw/commands/provision.js /app/commands/provision.js \
     && cp /obw/functions/community.js /app/functions/community.js \
     && cp /obw/functions/communityDm.js /app/functions/communityDm.js \
     && cp /obw/reactionHandlers/community.js /app/reactionHandlers/community.js \
+    && cp /obw/blueprints/server.js /app/blueprints/server.js \
     && node /obw/scripts/apply-obw.js /app
 
 WORKDIR /app
