@@ -3,13 +3,8 @@ const path = require('path');
 
 const root = process.argv[2] || '/app';
 
-function read(rel) {
-  return fs.readFileSync(path.join(root, rel), 'utf8');
-}
-function write(rel, content) {
-  fs.writeFileSync(path.join(root, rel), content);
-  console.log(`patched ${rel}`);
-}
+function read(rel) { return fs.readFileSync(path.join(root, rel), 'utf8'); }
+function write(rel, content) { fs.writeFileSync(path.join(root, rel), content); console.log(`patched ${rel}`); }
 function requireReplace(content, needle, replacement, label) {
   if (!content.includes(needle)) throw new Error(`Could not patch ${label}: expected source block not found`);
   return content.replace(needle, replacement);
@@ -23,7 +18,7 @@ function requireReplace(content, needle, replacement, label) {
     s = requireReplace(
       s,
       '  tags: { type: Array, default: [] },',
-      `  community: {\n    launchers: { type: Array, default: [] },\n    conversations: { type: Array, default: [] },\n    starboard: {\n      enabled: { type: Boolean, default: false },\n      channelId: { type: String, default: null },\n      emoji: { type: String, default: "⭐" },\n      threshold: { type: Number, default: 3 },\n      includeNsfw: { type: Boolean, default: false },\n      entries: { type: Array, default: [] },\n    },\n    confessions: {\n      enabled: { type: Boolean, default: false },\n      channelId: { type: String, default: null },\n      retainAuthor: { type: Boolean, default: true },\n      entries: { type: Array, default: [] },\n    },\n  },\n  tags: { type: Array, default: [] },`,
+      `  community: {\n    launchers: { type: Array, default: [] },\n    conversations: { type: Array, default: [] },\n    rolePanels: { type: Array, default: [] },\n    provision: { type: Object, default: {} },\n    starboard: {\n      enabled: { type: Boolean, default: false },\n      channelId: { type: String, default: null },\n      emoji: { type: String, default: "⭐" },\n      threshold: { type: Number, default: 3 },\n      includeNsfw: { type: Boolean, default: false },\n      entries: { type: Array, default: [] },\n    },\n    confessions: {\n      enabled: { type: Boolean, default: false },\n      channelId: { type: String, default: null },\n      retainAuthor: { type: Boolean, default: true },\n      entries: { type: Array, default: [] },\n    },\n  },\n  tags: { type: Array, default: [] },`,
       rel
     );
     write(rel, s);
@@ -58,9 +53,7 @@ function requireReplace(content, needle, replacement, label) {
   }
   const old = '  return roleReactionHandler(client, reaction, userId, emojiId, "add");';
   const next = `  const guildId = reaction.reaction?.guildId || reaction.guildId || reactionMsg.guildId;\n  const guildDb = guildId ? await client.database.getGuild(guildId, true) : null;\n  if (guildDb && await communityHandler(client, reaction, reactionMsg, guildDb)) return;\n\n  return roleReactionHandler(client, reaction, userId, emojiId, "add");`;
-  if (!s.includes('await communityHandler(client, reaction, reactionMsg, guildDb)')) {
-    s = requireReplace(s, old, next, rel);
-  }
+  if (!s.includes('await communityHandler(client, reaction, reactionMsg, guildDb)')) s = requireReplace(s, old, next, rel);
   write(rel, s);
 }
 
